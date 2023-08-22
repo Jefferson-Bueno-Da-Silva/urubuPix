@@ -1,0 +1,16 @@
+version: "3"
+services:
+  mongo:
+    image: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=urubu
+      - MONGO_INITDB_ROOT_PASSWORD=pix
+    volumes:
+      - mongo-db:/data/db
+    ports:
+    - "27018:27017"
+
+volumes:
+  mongo-db:
+
+
