@@ -9,6 +9,15 @@ services:
       - mongo-db:/data/db
     ports:
     - "27018:27017"
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - USER_DB=urubu
+      - PASSWORD_DB=pix
+      - CONNECTION_DB=mongo:27017/urubu_pix
+    command: npm start
 
 volumes:
   mongo-db:
