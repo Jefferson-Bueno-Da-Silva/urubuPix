@@ -1,10 +1,9 @@
-import { Document, Model, Types, model } from "mongoose";
-import { userSchema } from "../../schemas/user_schema";
+import { Model, Types, } from "mongoose";
 import { IUser } from "../../interfaces/IUser";
 import { IUserRepository } from "../IUserRepository";
 
 export class MongoUserRepository implements IUserRepository {
-  constructor(private User: Model<IUser>) {}
+  constructor(private User: Model<IUser>) { }
 
   async create(user: IUser): Promise<IUser> {
     const newUser = new this.User(user);
