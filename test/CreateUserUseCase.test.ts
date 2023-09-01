@@ -1,13 +1,21 @@
 import { beforeEach, describe, expect, it, jest, test } from "@jest/globals";
 import { CreateUserUseCase } from "../src/useCases/CreateUser/CreateUserUseCase";
 import { IUserRepository } from "../src/repositories/IUserRepository";
-import { Types } from "mongoose";
+import { Types, model } from "mongoose";
 import { IUser } from "../src/interfaces/IUser";
 import { ICreateUserDTO } from "../src/useCases/CreateUser/CreateUserDTO";
+import { userSchema } from "../src/schemas/user_schema";
+import { MongoUserRepository } from "../src/repositories/implementations/MongoUserRepository";
+import { FRIENDLY_ERRORS } from "../src/constants/FriendlyErrors";
+
 
 describe("Create User Use Case", () => {
-  let _createUserUseCase: CreateUserUseCase;
-  let _userRepository: IUserRepository;
+  const User = model<IUser>("users", userSchema);
+  const mongoUserRepository = new MongoUserRepository(User);
+  const createUserUseCase = new CreateUserUseCase(mongoUserRepository);
+  const mockExists = jest.spyOn(MongoUserRepository.prototype, 'exists');
+  const mockCreate = jest.spyOn(MongoUserRepository.prototype, 'create');
+  mockCreate.mockImplementation(async () => mockDatabaseUser)
 
   const mockDatabaseUser: IUser = {
     _id: "2" as unknown as Types.ObjectId,
@@ -21,23 +29,17 @@ describe("Create User Use Case", () => {
     balance: 0,
   };
 
-  beforeEach(() => {
-    _userRepository = {
-      exists: jest.fn(async () => false),
-      create: jest.fn(async () => mockDatabaseUser),
-      findByEmail: jest.fn(() => {
-        throw new Error("Function not implemented.");
-      }),
-      updateUser: jest.fn(() => {
-        throw new Error("Function not implemented.");
-      })
-    }
-
-    _createUserUseCase = new CreateUserUseCase(_userRepository);
+  it("should be create new user", async () => {
+    mockExists.mockImplementation(async () => false)
+    const user = await createUserUseCase.execute(mockUserDTO);
+    expect(user).toBe(mockDatabaseUser);
   });
 
-  it("create new user", async () => {
-    const user = await _createUserUseCase.execute(mockUserDTO);
-    expect(user).toBe(mockDatabaseUser);
+  it("shouldn't create new user", async () => {
+    mockExists.mockImplementation(async () => true)
+    await createUserUseCase.execute(mockUserDTO)
+      .catch((error) => {
+        expect(error).toBe(FRIENDLY_ERRORS.userAlreadyExists);
+      })
   });
 });
