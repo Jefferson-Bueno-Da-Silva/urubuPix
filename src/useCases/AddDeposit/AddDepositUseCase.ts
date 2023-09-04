@@ -3,7 +3,7 @@ import { IUserRepository } from "../../repositories/IUserRepository";
 import { IDepositDTO } from "./AddDepositDTO";
 
 export class AddDepositUseCase {
-  constructor(private userRepository: IUserRepository) {}
+  constructor(private userRepository: IUserRepository) { }
 
   async execute(depositDTO: IDepositDTO) {
     const user = await this.userRepository.findByEmail(depositDTO.email);
@@ -14,10 +14,10 @@ export class AddDepositUseCase {
 
     if (user) {
       const newBalance = user.balance + depositDTO.value;
-      await this.userRepository.updateUser(user._id, {
+      const updatedUser = await this.userRepository.updateUser(user._id, {
         balance: newBalance,
       });
-      return newBalance;
+      return updatedUser;
     } else {
       throw FRIENDLY_ERRORS.userNotExists;
     }
